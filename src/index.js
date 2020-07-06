@@ -1,65 +1,36 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-const HEAD = <div>Social Media App</div>;
 const rootNode = document.getElementById('root');
 
 function App() {
-	const [developer, setDeveloper] = React.useState({
-		years: 0,
-		isEmployed: false,
-		language: 'ruby',
-		name: 'Developer',
-	});
+	const GITHUB_URL = 'https://api.github.com/users/';
+	const [userProfile, setUserProfile] = useState(null);
+	const [search, setSearch] = useState('karthiknamburu');
 
-	const handleTitleChange = (event) => {
-		setDeveloper({
-			...developer,
-			name: event.target.value,
-		});
-	};
+	async function getUser() {
+		const response = await fetch(`${GITHUB_URL}${search}`);
+		const data = await response.json();
+		setUserProfile(data);
+	}
 
-	React.useEffect(() => {
-		document.title = developer.name;
-		console.log('RUNS');
-	}, [developer.name]);
+	useEffect(() => {
+		getUser();
+	}, [search]);
 
-	return (
+	return userProfile ? (
 		<div>
-			<h1>Employment Status</h1>
+			<h1>Github Profile</h1>
+			<input type='text' onChange={(event) => setSearch(event.target.value)} />
+			<button onClick={getUser}>Search</button>
+			<button>Clear</button>
 			<ul>
-				<li>
-					<input type='text' placeholder='Title' onChange={handleTitleChange} />
-				</li>
-				<li>No of Years of experience is {developer.years}</li>
-				<li>
-					<input
-						type='number'
-						onChange={(event) =>
-							setDeveloper({
-								...developer,
-								years: event.target.value,
-							})
-						}
-					/>
-				</li>
-				<li>
-					<button
-						onClick={() =>
-							setDeveloper({
-								...developer,
-								isEmployed: !developer.isEmployed,
-							})
-						}>
-						Toggle Employment
-					</button>
-				</li>
-				<li>{developer.isEmployed ? 'Employed' : 'UnEmployed'}</li>
-				{/* <li>
-					<button onClick={handleTitleChange}>Change Title</button>
-				</li> */}
+				<li>{userProfile.login}</li>
 			</ul>
+			<img src={userProfile.avatar_url} alt='avatar' style={{ height: 150 }} />
 		</div>
+	) : (
+		<div>Loading ...</div>
 	);
 }
 
